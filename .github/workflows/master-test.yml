@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-test:
-    runs-on: neodash-runners
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18.x]
@@ -33,3 +33,39 @@ jobs:
           start: yarn run dev
           wait-on: "http://localhost:3000"
           browser: chrome
+
+  deploy-to-github-pages:
+    name: Deploy Documentation to GitHub Pages
+    needs: build-test
+    outputs:
+      outcome: ${{ job.status }}
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./docs
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: yarn install
+      - run: yarn build
+      - name: Deploy to GitHub Pages
+        # if: github.ref == 'refs/heads/master'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/build/site/
+          user_name: QubitPi
+          user_email: jack20220723@gmail.com
+
+  slack-notification:
+    name: Send Slack Notification
+    if: ${{ always() }}
+    needs: deploy-to-github-pages
+    uses: QubitPi/hashicorp-aws/.github/workflows/slack-notification.yml@master
+    with:
+      job-status: ${{ needs.deploy-to-github-pages.outputs.outcome }}
+    secrets:
+      slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
