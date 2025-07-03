@@ -1,9 +1,5 @@
 name: Test/Deploy Master
 
-on:
-#  push:
-#    branches: [master]
-
 jobs:
   build-test:
     runs-on: neodash-runners

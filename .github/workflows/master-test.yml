@@ -61,13 +61,4 @@ jobs:
           publish_dir: docs/build/site/
           user_name: QubitPi
           user_email: jack20220723@gmail.com
-
-  slack-notification:
-    name: Send Slack Notification
-    if: ${{ always() }}
-    needs: deploy-to-github-pages
-    uses: QubitPi/hashicorp-aws/.github/workflows/slack-notification.yml@master
-    with:
-      job-status: ${{ needs.deploy-to-github-pages.outputs.outcome }}
-    secrets:
-      slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          cname: neodash.qubitpi.org
